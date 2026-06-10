@@ -1,0 +1,141 @@
+package org.example.newsapp.controller;
+import java.util.stream.Collectors;
+import org.example.newsapp.model.News;
+import org.example.newsapp.repo.NewsRepository;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+@Controller
+public class NewsController {
+
+    private final NewsRepository repo;
+
+    public NewsController(NewsRepository repo) {
+        this.repo = repo;
+    }
+    @GetMapping("/dbtest")
+    @ResponseBody
+    public String dbtest() {
+        long count = repo.count();
+        return "Total articles in DB: " + count;
+    }
+
+    // ─── Home Page ───────────────────────────────────────────────────────────
+    @GetMapping("/")
+    public String home(Model model) {
+        // Get ALL articles first
+        List<News> all = repo.findAll();
+
+        // Debug - check in console
+        System.out.println("=== HOMEPAGE DEBUG ===");
+        System.out.println("Total articles found: " + all.size());
+
+        if (!all.isEmpty()) {
+            System.out.println("First article title: " + all.get(0).getTitle());
+            System.out.println("First article category: " + all.get(0).getCategory());
+        }
+
+        // Limit to 10 articles for display
+        List<News> limited = all.stream().limit(10).collect(Collectors.toList());
+
+        // Add to model
+        model.addAttribute("newsList", limited);
+        model.addAttribute("techNews", safe(repo.findByCategoryIgnoreCaseOrderByPublishedDateDesc("Tech")));
+        model.addAttribute("sportsNews", safe(repo.findByCategoryIgnoreCaseOrderByPublishedDateDesc("Sports")));
+        model.addAttribute("lifestyleNews", safe(repo.findByCategoryIgnoreCaseOrderByPublishedDateDesc("Lifestyle")));
+
+        return "index";
+    }
+
+    // ─── Search ──────────────────────────────────────────────────────────────
+    @GetMapping("/search")
+    public String search(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String region,
+            Model model) {
+
+        keyword  = trimOrNull(keyword);
+        category = trimOrNull(category);
+        region   = trimOrNull(region);
+
+        List<News> results;
+
+        if (keyword != null) {
+            // Searches both title and content
+            results = safe(repo.findByKeyword(keyword));
+
+        } else if (category != null && region != null) {
+            results = safe(repo.findByCategoryIgnoreCaseAndRegionIgnoreCase(category, region));
+
+        } else if (category != null) {
+            results = safe(repo.findByCategoryIgnoreCase(category));
+
+        } else if (region != null) {
+            results = safe(repo.findByRegionIgnoreCase(region));
+
+        } else {
+            results = safe(repo.findTop10ByOrderByPublishedDateDesc());
+        }
+
+        model.addAttribute("newsList", results);
+        model.addAttribute("keyword",  keyword);
+        model.addAttribute("category", category);
+        model.addAttribute("region",   region);
+        model.addAttribute("total",    results.size());
+
+        return "results";
+    }
+
+    // ─── Category page ───────────────────────────────────────────────────────
+    @GetMapping("/category/{cat}")
+    public String byCategory(@PathVariable String cat, Model model) {
+        List<News> results = safe(repo.findByCategoryIgnoreCaseOrderByPublishedDateDesc(cat));
+        model.addAttribute("newsList", results);
+        model.addAttribute("category", cat);
+        model.addAttribute("total",    results.size());
+        return "results";
+    }
+
+    // ─── Article Detail ──────────────────────────────────────────────────────
+    @GetMapping("/article/{id}")
+    public String article(@PathVariable String id, Model model) {
+        Optional<News> found = repo.findById(id);
+        if (found.isEmpty()) {
+            return "redirect:/?error=notfound";
+        }
+        model.addAttribute("article", found.get());
+
+        // Related: same category, exclude current
+        List<News> related = safe(
+                repo.findByCategoryIgnoreCaseOrderByPublishedDateDesc(
+                        found.get().getCategory() != null ? found.get().getCategory() : ""
+                )
+        );
+        related.removeIf(n -> n.getId().equals(id));
+        model.addAttribute("related", related.stream().limit(3).toList());
+
+        return "article";
+    }
+
+    @GetMapping("/test")
+    @ResponseBody
+    public String test() {
+        return "WORKING";
+    }
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+    private String trimOrNull(String value) {
+        if (value == null) return null;
+        String t = value.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private List<News> safe(List<News> list) {
+        return list != null ? list : Collections.emptyList();
+    }
+}

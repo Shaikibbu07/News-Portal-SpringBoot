@@ -1,0 +1,32 @@
+package org.example.newsapp.repo;
+
+import org.example.newsapp.model.News;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+
+import java.util.List;
+
+public interface NewsRepository extends MongoRepository<News, String> {
+
+    // ─── Keyword search in title ─────────────────────────────────────────────
+    List<News> findByTitleContainingIgnoreCase(String keyword);
+
+    // ─── Keyword search in title OR content ──────────────────────────────────
+    @Query("{ $or: [ { title: { $regex: ?0, $options: 'i' } }, { content: { $regex: ?0, $options: 'i' } } ] }")
+    List<News> findByKeyword(String keyword);
+
+    // ─── Category + Region ───────────────────────────────────────────────────
+    List<News> findByCategoryIgnoreCaseAndRegionIgnoreCase(String category, String region);
+
+    // ─── Category only ───────────────────────────────────────────────────────
+    List<News> findByCategoryIgnoreCase(String category);
+
+    // ─── Region only ─────────────────────────────────────────────────────────
+    List<News> findByRegionIgnoreCase(String region);
+
+    // ─── Latest N articles (for homepage featured) ───────────────────────────
+    List<News> findTop10ByOrderByPublishedDateDesc();
+
+    // ─── By category, latest first ───────────────────────────────────────────
+    List<News> findByCategoryIgnoreCaseOrderByPublishedDateDesc(String category);
+}

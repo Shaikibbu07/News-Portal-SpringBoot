@@ -89,7 +89,11 @@ Then display them using:
 ```markdown
 ![Home Page](screenshots/homepage.png)
 ```
+## 📸 Project Preview
 
+<p align="center">
+  <img src="screenshots/homepage.png" alt="TV7ibbu Home Page" width="1000"/>
+</p>
 ---
 
 ## 🌱 Future Enhancements

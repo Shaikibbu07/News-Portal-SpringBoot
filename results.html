@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results — TV7ibbu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink:    #0d0d0d;
+            --paper:  #faf8f4;
+            --accent: #c0392b;
+            --muted:  #6b6b6b;
+            --border: #e0ddd6;
+            --card-bg:#ffffff;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { font-family: 'Source Sans 3', sans-serif; background: var(--paper); color: var(--ink); }
+
+        /* ── HEADER ────────────────────────────────────────────────────────────── */
+        .topstrip {
+            background: var(--ink); color: #aaa; font-size: 12px;
+            padding: 6px 40px; display: flex; justify-content: space-between;
+        }
+        .topstrip a { color: #aaa; text-decoration: none; }
+
+        .masthead {
+            text-align: center; padding: 20px 40px 14px;
+            border-bottom: 3px double var(--ink);
+        }
+        .masthead h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(32px, 5vw, 56px); font-weight: 900;
+        }
+
+        .navbar {
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px; display: flex; background: var(--card-bg);
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        }
+        .navbar a {
+            color: var(--ink); text-decoration: none; font-size: 13px;
+            font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
+            padding: 14px 18px; border-bottom: 3px solid transparent;
+            transition: border-color .2s, color .2s;
+        }
+        .navbar a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+        /* ── SEARCH BAR ─────────────────────────────────────────────────────────── */
+        .search-wrap {
+            background: var(--ink); padding: 16px 40px;
+            display: flex; gap: 10px; align-items: center;
+            justify-content: center; flex-wrap: wrap;
+        }
+        .search-wrap input {
+            background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+            color: white; padding: 9px 14px; border-radius: 4px;
+            font-family: inherit; font-size: 14px; width: 190px; outline: none;
+            transition: border-color .2s;
+        }
+        .search-wrap input::placeholder { color: rgba(255,255,255,.4); }
+        .search-wrap input:focus { border-color: var(--accent); }
+        .search-wrap button {
+            background: var(--accent); color: white; border: none;
+            padding: 9px 22px; border-radius: 4px; font-family: inherit;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .2s;
+        }
+        .search-wrap button:hover { opacity: .85; }
+
+        /* ── RESULTS AREA ────────────────────────────────────────────────────────── */
+        .container { max-width: 960px; margin: 0 auto; padding: 36px 40px; }
+
+        .results-header {
+            display: flex; justify-content: space-between; align-items: baseline;
+            margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+            flex-wrap: wrap; gap: 8px;
+        }
+        .results-header h2 {
+            font-family: 'Playfair Display', serif; font-size: 28px;
+        }
+        .results-header .count {
+            font-size: 13px; color: var(--muted);
+        }
+        .active-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+        .filter-tag {
+            background: var(--ink); color: white; font-size: 11px;
+            padding: 4px 10px; border-radius: 20px; letter-spacing: .5px;
+            text-transform: uppercase; font-weight: 600;
+        }
+
+        /* ── CARDS ───────────────────────────────────────────────────────────────── */
+        .results-list { display: flex; flex-direction: column; gap: 20px; }
+
+        .result-card {
+            display: flex; gap: 20px; background: var(--card-bg);
+            border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+            text-decoration: none; color: inherit;
+            transition: box-shadow .2s, transform .2s;
+        }
+        .result-card:hover {
+            box-shadow: 0 8px 28px rgba(0,0,0,.1);
+            transform: translateY(-2px);
+        }
+        .result-card img {
+            width: 220px; min-width: 220px; height: 155px; object-fit: cover;
+        }
+        .result-card .body {
+            padding: 18px; display: flex; flex-direction: column;
+            justify-content: space-between; flex: 1;
+        }
+        .result-card .cat {
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--accent); font-weight: 700; margin-bottom: 6px;
+        }
+        .result-card h3 {
+            font-family: 'Playfair Display', serif; font-size: 20px;
+            line-height: 1.3; margin-bottom: 8px;
+        }
+        .result-card .desc {
+            font-size: 14px; color: var(--muted); line-height: 1.6; flex: 1;
+        }
+        .result-card .footer-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 14px; flex-wrap: wrap; gap: 8px;
+        }
+        .result-card .meta { font-size: 12px; color: var(--muted); }
+        .read-btn {
+            background: var(--accent); color: white; font-size: 12px;
+            padding: 6px 14px; border-radius: 4px; text-decoration: none;
+            font-weight: 600; letter-spacing: .5px; transition: opacity .2s;
+        }
+        .read-btn:hover { opacity: .85; }
+
+        /* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
+        .empty {
+            text-align: center; padding: 80px 20px; color: var(--muted);
+        }
+        .empty span { font-size: 56px; display: block; margin-bottom: 16px; }
+        .empty h3 { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--ink); margin-bottom: 8px; }
+
+        /* ── BACK LINK ───────────────────────────────────────────────────────────── */
+        .back-link {
+            display: inline-block; margin-top: 36px; color: var(--accent);
+            text-decoration: none; font-weight: 600; font-size: 14px;
+            border-bottom: 1px solid transparent; transition: border-color .2s;
+        }
+        .back-link:hover { border-bottom-color: var(--accent); }
+
+        /* ── FOOTER ──────────────────────────────────────────────────────────────── */
+        footer {
+            background: var(--ink); color: #888; text-align: center;
+            padding: 20px; font-size: 13px; margin-top: 40px;
+        }
+        footer strong { color: white; font-family: 'Playfair Display', serif; }
+
+        @media (max-width: 700px) {
+            .result-card { flex-direction: column; }
+            .result-card img { width: 100%; min-width: unset; height: 200px; }
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topstrip">
+    <span id="live-date"></span>
+    <div><a href="#">About</a> &nbsp;·&nbsp; <a href="#">Contact</a></div>
+</div>
+
+<div class="masthead">
+    <h1>TV7ibbu</h1>
+</div>
+
+<nav class="navbar">
+    <a href="/">Home</a>
+    <a th:href="@{/category/Tech}">Tech</a>
+    <a th:href="@{/category/Sports}">Sports</a>
+    <a th:href="@{/category/Lifestyle}">Lifestyle</a>
+    <a th:href="@{/category/World}">World</a>
+    <a th:href="@{/category/Business}">Business</a>
+</nav>
+
+<div class="search-wrap">
+    <form action="/search" method="get" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+        <input type="text" name="keyword"  th:value="${keyword}"  placeholder="Search articles…">
+        <input type="text" name="category" th:value="${category}" placeholder="Category">
+        <input type="text" name="region"   th:value="${region}"   placeholder="Region">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="container">
+
+    <div class="results-header">
+        <h2>Search Results</h2>
+        <span class="count" th:text="${total != null ? total + ' article(s) found' : ''}"></span>
+    </div>
+
+    <!-- Active filter tags -->
+    <div class="active-filters">
+        <span class="filter-tag" th:if="${keyword  != null}" th:text="'🔍 ' + keyword"></span>
+        <span class="filter-tag" th:if="${category != null}" th:text="'📂 ' + category"></span>
+        <span class="filter-tag" th:if="${region   != null}" th:text="'🌍 ' + region"></span>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty" th:if="${newsList == null or #lists.isEmpty(newsList)}">
+        <span>🔍</span>
+        <h3>No articles found.</h3>
+        <p>Try different keywords, category, or region.</p>
+    </div>
+
+    <!-- Results -->
+    <div class="results-list" th:if="${newsList != null and !#lists.isEmpty(newsList)}">
+        <a th:each="n : ${newsList}"
+           th:href="@{'/article/' + ${n.id}}"
+           class="result-card">
+
+            <img th:src="${n.imageUrl != null ? n.imageUrl : '/images/placeholder.png'}"
+                 alt="news image">
+
+            <div class="body">
+                <div>
+                    <div class="cat" th:text="${n.category != null ? n.category : 'News'}"></div>
+                    <h3 th:text="${n.safeTitle}"></h3>
+                    <p class="desc" th:text="${n.shortContent}"></p>
+                </div>
+                <div class="footer-row">
+                <span class="meta">
+                    ✍ <span th:text="${n.author != null ? n.author : 'Staff'}"></span>
+                    &nbsp;·&nbsp;
+                    🌍 <span th:text="${n.region != null ? n.region : 'Global'}"></span>
+                    &nbsp;·&nbsp;
+                    📅 <span th:text="${n.publishedDate != null ? n.publishedDate : ''}"></span>
+                </span>
+                    <span class="read-btn">Read More →</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+<footer>
+    <strong>TV7ibbu</strong> &nbsp;·&nbsp; © <span id="yr"></span> All rights reserved.
+</footer>
+
+<script>
+    const now = new Date();
+    document.getElementById('live-date').textContent =
+        now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    document.getElementById('yr').textContent = now.getFullYear();
+</script>
+</body>
+</html>

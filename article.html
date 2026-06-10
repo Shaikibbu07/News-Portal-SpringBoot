@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${article.safeTitle + ' — TV7ibbu'}">Article — TV7ibbu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:    #0d0d0d;
+      --paper:  #faf8f4;
+      --accent: #c0392b;
+      --muted:  #6b6b6b;
+      --border: #e0ddd6;
+      --card-bg:#ffffff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Source Sans 3', sans-serif; background: var(--paper); color: var(--ink); }
+
+    .topstrip {
+      background: var(--ink); color: #aaa; font-size: 12px;
+      padding: 6px 40px; display: flex; justify-content: space-between;
+    }
+    .topstrip a { color: #aaa; text-decoration: none; }
+
+    .masthead {
+      text-align: center; padding: 20px 40px 14px;
+      border-bottom: 3px double var(--ink);
+    }
+    .masthead a {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 56px); font-weight: 900;
+      text-decoration: none; color: var(--ink);
+    }
+
+    .navbar {
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px; display: flex; background: var(--card-bg);
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .navbar a {
+      color: var(--ink); text-decoration: none; font-size: 13px;
+      font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
+      padding: 14px 18px; border-bottom: 3px solid transparent;
+      transition: border-color .2s, color .2s;
+    }
+    .navbar a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+    .article-wrap {
+      max-width: 1100px; margin: 0 auto;
+      padding: 48px 40px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 60px;
+    }
+
+    .breadcrumb {
+      font-size: 12px; color: var(--muted); margin-bottom: 16px;
+      display: flex; gap: 6px; align-items: center;
+    }
+    .breadcrumb a { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .cat-badge {
+      font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--accent); font-weight: 700; margin-bottom: 12px;
+    }
+
+    .article-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.2; font-weight: 900;
+      margin-bottom: 20px;
+    }
+
+    .article-meta {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      font-size: 13px; color: var(--muted);
+      padding: 16px 0; border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border); margin-bottom: 28px;
+    }
+    .article-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .article-hero {
+      width: 100%; max-height: 480px;
+      object-fit: cover; border-radius: 4px;
+      margin-bottom: 32px;
+      display: block;
+    }
+
+    .article-body {
+      font-size: 18px; line-height: 1.85;
+      color: #1a1a1a;
+    }
+    .article-body p { margin-bottom: 20px; }
+
+    .back-link {
+      display: inline-block; margin-top: 36px;
+      color: var(--accent); text-decoration: none; font-weight: 600; font-size: 14px;
+      border-bottom: 1px solid transparent; transition: border-color .2s;
+    }
+    .back-link:hover { border-bottom-color: var(--accent); }
+
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .section-head .bar { width: 4px; height: 20px; background: var(--accent); border-radius: 2px; }
+    .section-head h3 { font-family: 'Playfair Display', serif; font-size: 20px; }
+
+    .related-card {
+      display: flex; gap: 12px; padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none; color: inherit;
+    }
+    .related-card:last-child { border-bottom: none; }
+    .related-card img {
+      width: 80px; height: 60px; object-fit: cover;
+      border-radius: 3px; flex-shrink: 0;
+    }
+    .related-card .cat {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--accent); font-weight: 700;
+    }
+    .related-card h5 {
+      font-family: 'Playfair Display', serif; font-size: 14px;
+      line-height: 1.35; margin-top: 3px;
+      transition: color .2s;
+    }
+    .related-card:hover h5 { color: var(--accent); }
+    .related-card .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    .ad-box {
+      background: var(--border); border-radius: 6px; height: 250px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--muted); letter-spacing: 2px;
+      text-transform: uppercase; margin-top: 32px;
+    }
+
+    footer {
+      background: var(--ink); color: #888; text-align: center;
+      padding: 20px; font-size: 13px; margin-top: 40px;
+    }
+    footer strong { color: white; font-family: 'Playfair Display', serif; }
+
+    @media (max-width: 860px) {
+      .article-wrap { grid-template-columns: 1fr; padding: 24px 20px; gap: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topstrip">
+  <span id="live-date"></span>
+  <div><a href="#">About</a> &nbsp;·&nbsp; <a href="#">Contact</a></div>
+</div>
+
+<div class="masthead">
+  <a href="/">TV7ibbu</a>
+</div>
+
+<nav class="navbar">
+  <a href="/">Home</a>
+  <a th:href="@{/category/Tech}">Tech</a>
+  <a th:href="@{/category/Sports}">Sports</a>
+  <a th:href="@{/category/Lifestyle}">Lifestyle</a>
+  <a th:href="@{/category/World}">World</a>
+  <a th:href="@{/category/Business}">Business</a>
+</nav>
+
+<div class="article-wrap">
+
+  <article class="article-main">
+
+    <div class="breadcrumb">
+      <a href="/">Home</a> ›
+      <a th:href="@{/category/{c}(c=${article.category})}"
+         th:text="${article.category != null ? article.category : 'News'}">Category</a> ›
+      <span th:text="${article.safeTitle}">Title</span>
+    </div>
+
+    <div class="cat-badge" th:text="${article.category != null ? article.category : 'News'}"></div>
+
+    <h1 class="article-title" th:text="${article.safeTitle}"></h1>
+
+    <div class="article-meta">
+      <span>✍ <strong th:text="${article.author != null ? article.author : 'Staff Reporter'}"></strong></span>
+      <span>🌍 <span th:text="${article.region != null ? article.region : 'Global'}"></span></span>
+      <span>📅 <span th:text="${article.publishedDate != null ? article.publishedDate : 'Today'}"></span></span>
+    </div>
+
+    <img class="article-hero"
+         th:src="${article.imageUrl != null ? article.imageUrl : 'https://picsum.photos/800/400?random=1'}"
+         th:alt="${article.safeTitle}">
+
+    <div class="article-body">
+      <p th:text="${article.content}"></p>
+    </div>
+
+    <a href="/" class="back-link">← Back to Home</a>
+
+  </article>
+
+  <aside class="sidebar">
+
+    <div th:if="${related != null and !#lists.isEmpty(related)}">
+      <div class="section-head">
+        <div class="bar"></div>
+        <h3>Related</h3>
+      </div>
+      <a th:each="r : ${related}"
+         th:href="@{'/article/' + ${r.id}}"
+         class="related-card">
+        <img th:src="${r.imageUrl != null ? r.imageUrl : 'https://picsum.photos/80/60?random=1'}" alt="">
+        <div class="info">
+          <div class="cat" th:text="${r.category != null ? r.category : 'News'}"></div>
+          <h5 th:text="${r.safeTitle}"></h5>
+          <div class="meta" th:text="${r.publishedDate != null ? r.publishedDate : ''}"></div>
+        </div>
+      </a>
+    </div>
+
+    <div class="ad-box">Advertisement</div>
+
+  </aside>
+
+</div>
+
+<footer>
+  <strong>TV7ibbu</strong> &nbsp;·&nbsp; © <span id="yr"></span> All rights reserved.
+</footer>
+
+<script>
+  const now = new Date();
+  document.getElementById('live-date').textContent =
+          now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('yr').textContent = now.getFullYear();
+</script>
+</body>
+</html>

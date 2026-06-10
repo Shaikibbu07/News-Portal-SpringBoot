@@ -72,29 +72,11 @@ TV7ibbu-News-Portal/
 
 ## 📸 Screenshots
 
-|               Home Page              |
-| :----------------------------------: |
-| *(Add your project screenshot here)* |
-
-> Create a folder named `screenshots` and add images like:
->
-> ```text
-> screenshots/homepage.png
-> screenshots/article-page.png
-> screenshots/admin-dashboard.png
-> ```
-
-Then display them using:
-
-```markdown
-![Home Page](screenshots/homepage.png)
-```
 ## 📸 Project Preview
 
 <p align="center">
-  <img src="screenshots/homepage.png" alt="TV7ibbu Home Page" width="1000"/>
+  <img src="homepage.png" alt="TV7ibbu Home Page" width="1000"/>
 </p>
----
 
 ## 🌱 Future Enhancements
 
